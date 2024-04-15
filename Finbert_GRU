@@ -1,1 +1,80 @@
 
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.feature_extraction.text import CountVectorizer
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import GRU, Dense, Embedding, Flatten, Concatenate, Input, Reshape
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.losses import MeanSquaredError
+
+# Load the dataset
+data = pd.read_csv('merged_CityBankdataset.csv')
+
+# Preprocessing
+# Convert 'Vol.' and 'Change %' columns to numeric values
+data['Vol.'] = data['Vol.'].replace('[KMB]', '', regex=True).astype(float) * \
+    data['Vol.'].str.extract('[pP](\d+)', expand=False).fillna(1).astype(int)
+
+data['Change %'] = data['Change %'].str.rstrip('%').astype('float') / 100.0
+
+# Separate numerical features
+numerical_cols = ['Open', 'High', 'Low', 'Vol.', 'Change %']
+X_numerical = data[numerical_cols].values
+
+# Text content (convert to string)
+X_text = data['Content'].astype(str).values
+
+# Tokenize text content using CountVectorizer
+vectorizer = CountVectorizer(max_features=1000)  # Limit vocabulary size
+X_text_features = vectorizer.fit_transform(X_text).toarray()
+
+# Standardize numerical features
+scaler = StandardScaler()
+X_numerical_scaled = scaler.fit_transform(X_numerical)
+
+# Split the data into train and validation sets
+X_train_num, X_val_num, X_train_text, X_val_text, y_train, y_val = train_test_split(
+    X_numerical_scaled, X_text_features, data['Price'].values, test_size=0.2, random_state=42
+)
+
+# Define input layers
+num_input = Input(shape=(X_train_num.shape[1],), name='num_input')
+text_input = Input(shape=(X_train_text.shape[1],), name='text_input')
+
+# Embedding layer for text input
+embedding_layer = Embedding(input_dim=X_text_features.shape[1], output_dim=64)(text_input)
+flattened_embedding = Flatten()(embedding_layer)
+
+# Reshape flattened_embedding to match the number of features in num_input
+num_features = X_train_num.shape[1]
+embedding_size = flattened_embedding.shape[1]
+new_shape = (num_features, embedding_size // num_features)
+reshaped_embedding = Reshape(new_shape)(flattened_embedding)
+
+# Transpose reshaped_embedding to match the desired shape for concatenation
+reshaped_embedding = Reshape((num_features, embedding_size // num_features))(reshaped_embedding)
+
+# Concatenate numerical and reshaped text features
+concatenated_features = Concatenate(axis=-1)([num_input, reshaped_embedding])
+
+# GRU layer
+gru_layer = GRU(128)(concatenated_features)
+
+# Dense layers
+dense_layer1 = Dense(64, activation='relu')(gru_layer)
+output_layer = Dense(1)(dense_layer1)
+
+# Define the model
+model = Model(inputs=[num_input, text_input], outputs=output_layer)
+
+# Compile the model
+model.compile(optimizer=Adam(), loss=MeanSquaredError())
+
+# Train the model
+batch_size = 32
+epochs = 10
+model.fit({'num_input': X_train_num, 'text_input': X_train_text}, y_train, 
+          validation_data=({'num_input': X_val_num, 'text_input': X_val_text}, y_val), 
+          batch_size=batch_size, epochs=epochs)
