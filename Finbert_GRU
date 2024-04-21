@@ -2,9 +2,11 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import GRU, Dense
 import matplotlib.pyplot as plt
+import math
 
 # Load the dataset
 df = pd.read_csv('DutchBanglaBankFinbert.csv')
@@ -54,10 +56,11 @@ y_pred = model.predict(X_test)
 y_pred_inv = scaler.inverse_transform(np.hstack((y_pred, np.zeros((y_pred.shape[0], 4)))))[:, 0]
 y_test_inv = scaler.inverse_transform(np.hstack((y_test.reshape(-1, 1), np.zeros((y_test.shape[0], 4)))))[:, 0]
 
+
 # Get the test dates corresponding to the predicted values
 test_dates = df['Date'].values[-len(y_test):]
 
-# Reverse the order of test dates, predictions, and actual values
+# Reverse the order of test dates, predictions, and actual values as normally it would show in descending order
 test_dates = test_dates[::-1]
 y_pred_inv = y_pred_inv[::-1]
 y_test_inv = y_test_inv[::-1]
@@ -79,8 +82,31 @@ plt.xticks(ticks=subset_indices, labels=date_labels_subset, rotation=45)  # Disp
 plt.legend()
 plt.show()
 
-# Evaluate the model
-mae = np.mean(np.abs(y_test_inv - y_pred_inv))
-mse = np.mean((y_test_inv - y_pred_inv)**2)
+# Evaluate the model on testing data
+mae = mean_absolute_error(y_test_inv, y_pred_inv)
+mse = mean_squared_error(y_test_inv, y_pred_inv)
+rmse = math.sqrt(mse)
+r2 = r2_score(y_test_inv, y_pred_inv)
+
+print("Testing Metrics:")
 print(f"Mean Absolute Error (MAE): {mae:.2f}")
 print(f"Mean Squared Error (MSE): {mse:.2f}")
+print(f"Root Mean Squared Error (RMSE): {rmse:.2f}")
+print(f"R-squared (R2): {r2:.2f}")
+
+# Evaluate the model on training data
+y_train_pred = model.predict(X_train)
+y_train_pred_inv = scaler.inverse_transform(np.hstack((y_train_pred, np.zeros((y_train_pred.shape[0], 4)))))[:, 0]
+y_train_inv = scaler.inverse_transform(np.hstack((y_train.reshape(-1, 1), np.zeros((y_train.shape[0], 4)))))[:, 0]
+
+mae_train = mean_absolute_error(y_train_inv, y_train_pred_inv)
+mse_train = mean_squared_error(y_train_inv, y_train_pred_inv)
+rmse_train = math.sqrt(mse_train)
+r2_train = r2_score(y_train_inv, y_train_pred_inv)
+
+print("\nTraining Metrics:")
+print(f"Mean Absolute Error (MAE): {mae_train:.2f}")
+print(f"Mean Squared Error (MSE): {mse_train:.2f}")
+print(f"Root Mean Squared Error (RMSE): {rmse_train:.2f}")
+print(f"R-squared (R2): {r2_train:.2f}")
+
