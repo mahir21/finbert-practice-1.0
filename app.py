@@ -1,5 +1,3 @@
-# This file is for the website
-
 from flask import Flask, render_template, request
 import pandas as pd
 import numpy as np
@@ -38,36 +36,30 @@ def index():
         df['Vol.'] = df['Vol.'].replace('[KMB]+$', '', regex=True).astype(float) * df['Vol.'].str.extract(r'[\d\.]+([KMB]+)', expand=False).fillna(1).replace(['K','M', 'B'], [10**3, 10**6, 10**9]).astype(int)
 
         # Select relevant features for modeling
-        df_filtered = df[['Open', 'Price', 'High', 'Low', 'Vol.']]
+        df_filtered = df[['Open', 'Price', 'High', 'Low', 'Vol.', 'Sentiment']]
 
         # Normalize data (excluding 'Date' column)
         scaler = MinMaxScaler()
-        scaled_data = scaler.fit_transform(df_filtered)
+        scaled_data = scaler.fit_transform(df_filtered[['Open', 'Price', 'High', 'Low', 'Vol.']])
 
-        # Define function to create sequences
-        def create_sequences(data, n_steps):
-            X, y = [], []
-            for i in range(len(data) - n_steps):
-                X.append(data[i:(i + n_steps)])
-                y.append(data[i + n_steps, 0])  # Predicting the 'Open' price
-            return np.array(X), np.array(y)
+        X = scaled_data[:, :-1]  # Features (excluding 'Sentiment')
+        y = scaled_data[:, 0]    # Target: 'Open' price
 
-        n_steps = 10
-        X, y = create_sequences(scaled_data, n_steps)
+        # Split data into training and testing sets
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-        # Build model (default to LSTM)
+        # Build LSTM model
         model = Sequential([
-            LSTM(50, input_shape=(X_train.shape[1], X_train.shape[2])),
+            LSTM(50, input_shape=(X_train.shape[1], 1)),
             Dense(1)
         ])
         model.compile(optimizer='adam', loss='mean_squared_error')
 
         # Train model
-        history = model.fit(X_train, y_train, epochs=50, batch_size=32, validation_split=0.1, verbose=1)
+        history = model.fit(X_train[:,:,np.newaxis], y_train, epochs=50, batch_size=32, validation_split=0.1, verbose=1)
 
         # Make predictions
-        y_pred = model.predict(X_test)
+        y_pred = model.predict(X_test[:,:,np.newaxis])
 
         # Inverse transform predictions to original scale
         y_pred_inv = scaler.inverse_transform(np.hstack((y_pred, np.zeros((y_pred.shape[0], 4)))))[:, 0]
@@ -78,8 +70,8 @@ def index():
         # Plot actual vs. predicted values
         fig, ax = plt.subplots(figsize=(12, 6))
         ax.plot(y_test_inv, label='Actual Open Prices', color='blue')
-        ax.plot(y_pred_inv, label=f'Predicted Open Prices ({selected_model.upper()})', color='red')
-        ax.set_title(f'Stock Price Prediction using {selected_model.upper()}')
+        ax.plot(y_pred_inv, label=f'Predicted Open Prices ({selected_model})', color='red')
+        ax.set_title(f'Stock Price Prediction using {selected_model}')
         ax.set_xlabel('Date')
         ax.set_ylabel('Stock Price')
         ax.legend()
