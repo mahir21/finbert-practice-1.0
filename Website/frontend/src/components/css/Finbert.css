@@ -1,0 +1,80 @@
+.finbert-container {
+    width: 80%;
+    margin: 50px auto;
+    padding: 30px;
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    border-radius: 20px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    line-height: 1.6;
+    text-align: justify;
+}
+
+.finbert-heading {
+    color: #007bff;
+    font-size: 28px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.finbert-container p {
+    margin-bottom: 20px;
+}
+
+.finbert-container ol {
+    margin-bottom: 20px;
+}
+
+.finbert-container li {
+    margin-bottom: 10px;
+}
+
+.image-container {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.image-container img {
+    max-width: 50%;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+.button-container {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.project-page-btn,
+.lstm-page-btn {
+    display: inline-block;
+    text-align: center;
+    text-decoration: none;
+    color: #fff;
+    background-color: #007bff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    margin-right: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.project-page-btn:hover,
+.lstm-page-btn:hover {
+    background-color: #0056b3;
+}
+
+.back-to-home-btn {
+    display: inline-block;
+    text-align: center;
+    text-decoration: none;
+    color: #fff;
+    background-color: #28a745;
+    padding: 10px 20px;
+    border-radius: 5px;
+    margin-right: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.back-to-home-btn:hover {
+    background-color: #218838;
+}

@@ -1,0 +1,70 @@
+.about-container {
+    width: 80%;
+    margin: 50px auto;
+    padding: 30px;
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    border-radius: 20px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    line-height: 1.6;
+    text-align: center;
+}
+
+.about-heading {
+    color: #007bff;
+    font-size: 32px;
+    margin-bottom: 20px;
+    transition: color 0.3s ease;
+}
+
+.about-heading:hover {
+    color: #0056b3;
+}
+
+.about-container p {
+    margin-bottom: 20px;
+    text-align: justify;
+}
+
+.about-container ol {
+    margin-bottom: 20px;
+}
+
+.about-container li {
+    margin-bottom: 10px;
+}
+
+.button-container {
+    text-align: center;
+}
+
+.back-to-home-btn {
+    display: inline-block;
+    text-align: center;
+    text-decoration: none;
+    color: #fff;
+    background-color: #007bff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.back-to-home-btn:hover {
+    background-color: #0056b3;
+}
+
+.finbert-page-btn {
+    display: inline-block;
+    text-align: center;
+    text-decoration: none;
+    color: #fff;
+    background-color: #007bff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    margin-left: 20px;
+    transition: background-color 0.3s ease;
+}
+
+.finbert-page-btn:hover {
+    background-color: #0056b3;
+}
