@@ -6,6 +6,7 @@ import Home from './components/Home.js';
 import Prediction from './components/HomePage';
 import Login from './components/Login';
 import Register from './components/Register';
+import Logout from './components/Logout.js';
 import About from './components/About.js'; 
 import Contact from './components/ContactUs.js';
 import Services from './components/Services.js';
@@ -29,6 +30,7 @@ function App() {
           <Route path="/prediction" element={<Prediction />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/logout" element={<Logout />} />
           <Route path="/about" element={<About />} /> 
           <Route path="/contact" element={<Contact />} /> 
           <Route path="/services" element={<Services />} /> 

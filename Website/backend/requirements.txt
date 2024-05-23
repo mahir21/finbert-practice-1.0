@@ -6,3 +6,8 @@ scikit-learn
 tensorflow
 matplotlib
 seaborn
+pymongo 
+dnspython 
+bcrypt
+Flask-Session
+werkzeug 

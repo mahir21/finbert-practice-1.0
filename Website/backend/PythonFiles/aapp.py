@@ -1,12 +1,5 @@
-from flask import Flask, request, jsonify, session
+from flask import Flask, request, jsonify
 from flask_cors import CORS
-from pymongo import MongoClient
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_session import Session
-import os
-import sys
-print("Current working directory:", os.getcwd())
-print("sys.path:", sys.path)
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
@@ -17,70 +10,12 @@ import matplotlib.pyplot as plt
 import io
 import base64
 
+app = Flask(__name__)
+CORS(app)
+
 # Use non-interactive Agg backend for matplotlib
 import matplotlib
 matplotlib.use('Agg')
-
-app = Flask(__name__)
-
-# Allowing all origins for simplicity (adjust in production)
-CORS(app, supports_credentials=True, resources={r"/*": {"origins": "*", "methods": ["GET", "POST", "OPTIONS"]}})
-
-app.config.from_object('config')
-
-# MongoDB setup
-client = MongoClient(app.config['MONGO_URI'])
-db = client['login_register']
-users_collection = db['users']
-
-# Flask-Session setup
-app.config['SECRET_KEY'] = app.config['SECRET_KEY']
-app.config['SESSION_TYPE'] = 'filesystem'
-Session(app)
-
-@app.route('/register', methods=['POST'])
-def register():
-    data = request.get_json()
-    if not data:
-        return jsonify({'message': 'Request body must be JSON'}), 415
-
-    username = data.get('username')
-    password = data.get('password')
-
-    if users_collection.find_one({'username': username}):
-        return jsonify({'message': 'User already exists'}), 400
-
-    hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
-    users_collection.insert_one({'username': username, 'password': hashed_password})
-
-    return jsonify({'message': 'User registered successfully'}), 200
-
-@app.route('/login', methods=['POST'])
-def login():
-    data = request.get_json()
-    if not data:
-        return jsonify({'message': 'Request body must be JSON'}), 415
-
-    username = data.get('username')
-    password = data.get('password')
-
-    user = users_collection.find_one({'username': username})
-    if user and check_password_hash(user['password'], password):
-        session['user'] = {'username': user['username']}
-        return jsonify({'username': user['username']}), 200
-
-    return jsonify({'message': 'Invalid username or password'}), 401
-
-@app.route('/logout', methods=['POST'])
-def logout():
-    session.pop('user', None)
-    return jsonify({'message': 'Logged out successfully'}), 200
-
-@app.route('/check_login', methods=['GET'])
-def check_login():
-    if 'user' in session:
-        return jsonify({'user': session['user']}), 200
-    return jsonify({'message': 'Not logged in'}), 401
 
 def plot_to_base64(plt):
     buf = io.BytesIO()

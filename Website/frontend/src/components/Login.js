@@ -1,24 +1,35 @@
-// Login.js
-
-import React, { useState } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom'; // Import Link for navigation
+import { Link, useNavigate } from 'react-router-dom';
+import { UserContext } from './UserContext';
 import styles from './css/login.module.css';
 
 const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
+    const { user, setUser } = useContext(UserContext);
+    const navigate = useNavigate(); // Corrected use of useNavigate
+
+    useEffect(() => {
+        if (user) {
+            navigate('/'); // Corrected from history.push('/')
+        }
+    }, [user, navigate]);
 
     const handleLogin = async () => {
         try {
             const response = await axios.post('http://localhost:5000/login', {
                 username: username,
                 password: password
+            }, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
             });
             if (response.status === 200) {
                 setMessage('Login successful');
-                // Redirect to home or dashboard page
+                setUser({ username: response.data.username });
             }
         } catch (error) {
             setMessage('Invalid username or password');
